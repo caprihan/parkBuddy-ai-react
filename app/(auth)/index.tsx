@@ -35,7 +35,7 @@ export default function LoginScreen() {
           // For this example, we assume if it exists, it's usable.
           setUser(sessionData); // Set user in context
           router.replace({ // Redirect to main app screen
-            pathname: "/(tabs)/browse", // Or your preferred home screen
+            pathname: "/(tabs)/scan", // Or your preferred home screen
             // params: { user: JSON.stringify(sessionData) }, // If needed by the target screen
           });
         }
@@ -145,7 +145,7 @@ export default function LoginScreen() {
     }
 
     router.replace({
-      pathname: "/(tabs)/search",
+      pathname: "/(tabs)/scan",
       params: { user: JSON.stringify(profile) } // Consider if you still need to pass full profile here
     });
     setLoading(false);
