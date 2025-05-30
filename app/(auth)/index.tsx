@@ -114,52 +114,6 @@ export default function LoginScreen() {
     }
   };
 
-  // Fetch user permissions
-  // const fetchUserPermissions = async (
-  //   token: string | undefined,
-  //   profile: any
-  // ) => {
-  //   if (!token) return;
-
-  //   const email = profile?.email;
-
-  //   if (!email) return;
-
-  //   try {
-  //     const url = `https://vvuf6mpbnbafi71-gcatp2.adb.ap-mumbai-1.oraclecloudapps.com/ords/skosh/sk_admins/${encodeURIComponent(
-  //       email.toUpperCase()
-  //     )}`;
-  //     const adminRes = await fetch(url, {
-  //       headers: {
-  //         Authorization: process.env.EXPO_PUBLIC_API_BASIC_AUTH!,
-  //         Accept: "application/json",
-  //       },
-  //     });
-
-  //     if (adminRes.status === 404) {
-  //       setUser({ token, role: "GENERAL", email, adminRights: "NONE" });
-  //     } else if (adminRes.ok) {
-  //       const admin = await adminRes.json();
-  //       setUser({
-  //         token,
-  //         role: "ADMIN",
-  //         email,
-  //         adminRights: admin.admin_rights || "NONE",
-  //       });
-  //     }
-
-  //     //      router.replace("/");
-  //     router.replace({
-  //       // pathname: "/(tabs)/home",
-  //       pathname: "/(tabs)/browse",
-  //       params: { user: JSON.stringify(profile) },
-  //     });
-  //   } catch (err) {
-  //     console.error("Auth error", err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const fetchUserPermissions = async (
     token: string | undefined,
     profile: any
@@ -176,58 +130,25 @@ export default function LoginScreen() {
       return;
     }
 
-    try {
-      const url = `https://vvuf6mpbnbafi71-gcatp2.adb.ap-mumbai-1.oraclecloudapps.com/ords/skosh/sk_admins/${encodeURIComponent(
-        email.toUpperCase()
-      )}`;
-      const adminRes = await fetch(url, {
-        headers: {
-          Authorization: process.env.EXPO_PUBLIC_API_BASIC_AUTH!,
-          Accept: "application/json",
-        },
-      });
+    let userSessionData = {
+      token,
+      email
+    };
+    setUser(userSessionData);
 
-      let userSessionData;
-
-      if (adminRes.status === 404) {
-        userSessionData = { token, role: "GENERAL" as const, email, adminRights: "NONE" };
-        setUser(userSessionData);
-      } else if (adminRes.ok) {
-        const admin = await adminRes.json();
-        userSessionData = {
-          token,
-          role: "ADMIN" as const,
-          email,
-          adminRights: admin.admin_rights || "NONE",
-        };
-        setUser(userSessionData);
-      } else {
-        // Handle other non-OK responses if necessary
-        console.error("Failed to fetch user permissions:", adminRes.status);
-        setLoading(false);
-        return;
+    if (userSessionData) {
+      try {
+        await SecureStore.setItemAsync("userSession", JSON.stringify(userSessionData));
+      } catch (e) {
+        console.error("Failed to save user session to SecureStore", e);
       }
-
-      if (userSessionData) {
-        try {
-          await SecureStore.setItemAsync("userSession", JSON.stringify(userSessionData));
-        } catch (e) {
-          console.error("Failed to save user session to SecureStore", e);
-        }
-      }
-
-      router.replace({
-        pathname: "/(tabs)/browse",
-        params: { user: JSON.stringify(profile) }, // Consider if you still need to pass full profile here
-      });
-    } catch (err) {
-      console.error("Auth error", err);
-    } finally {
-      // setLoading(false) is called here, but if navigation occurs,
-      // this screen might unmount before this is hit.
-      // It's generally safe, but be mindful of unmounting effects.
-      setLoading(false);
     }
+
+    router.replace({
+      pathname: "/(tabs)/search",
+      params: { user: JSON.stringify(profile) } // Consider if you still need to pass full profile here
+    });
+    setLoading(false);
   };
   // Google Sign-In workflow
   const googleSignIn = async () => {
@@ -273,7 +194,7 @@ export default function LoginScreen() {
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <>
-          <Text style={styles.title}>ShabdKosh</Text>
+          <Text style={styles.title}>ParkBuddy-AI</Text>
           <GoogleSignInButton onPress={googleSignIn} style={{ width: 280 }} />
         </>
       )}

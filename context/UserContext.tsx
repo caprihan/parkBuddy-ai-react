@@ -6,8 +6,6 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin"; // Imp
 type User = {
   token: string | null;
   email?: string;
-  role: "GENERAL" | "ADMIN";
-  adminRights?: string;
 };
 
 const UserContext = createContext<{
@@ -15,13 +13,13 @@ const UserContext = createContext<{
   setUser: (u: User) => void;
   logout: () => void;
 }>({
-  user: { token: null, role: "GENERAL" },
+  user: { token: null}, // Default user state
   setUser: () => {},
   logout: () => {},
 });
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUserState] = useState<User>({ token: null, role: "GENERAL" });
+  const [user, setUserState] = useState<User>({ token: null});
 
   // On mount, load the user from SecureStore (ensure key is "userSession")
   useEffect(() => {
@@ -71,7 +69,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       console.error("UserProvider>>Error signing out from Google:", error);
     }
     console.log("UserProvider>>Clearing user state and SecureStore");
-    setUserState({ token: null, role: "GENERAL" }); // Clear local user state
+    setUserState({ token: null}); // Clear local user state
     // The useEffect above will handle deleting from SecureStore
   };
 
