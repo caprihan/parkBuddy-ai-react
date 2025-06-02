@@ -9,6 +9,7 @@ import Constants from "expo-constants";
 import { useUser } from "../../context/UserContext";
 import { useRouter } from "expo-router";
 import * as Localization from 'expo-localization';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 export default function ScanScreen() {
   const theme = useTheme();
@@ -72,14 +73,20 @@ export default function ScanScreen() {
     console.log("ScanScreen: Launching camera...");
     try {
       const photoResult = await cameraRef.current?.takePictureAsync({
-        quality: 0.7,
-        // base64: true, // Removed base64 option
+        quality: 0.5,  // lower resolution
       });
 
-      if (photoResult && photoResult.uri) {
+      if (photoResult?.uri) {
         console.log("ScanScreen: Photo taken, URI:", photoResult.uri);
-        setImageUri(photoResult.uri);
-        processPhoto(photoResult.uri); // Pass URI to processPhoto
+        // Resize down for preview and upload to reduce memory
+        const { uri: smallUri } = await ImageManipulator.manipulateAsync(
+          photoResult.uri,
+          [{ resize: { width: 240, height: 320 } }],
+          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        console.log("ScanScreen: Small image URI:", smallUri);
+        setImageUri(smallUri);
+        processPhoto(smallUri);
       } else {
         console.log("ScanScreen: Photo capture canceled or no assets found, or URI missing.");
         Alert.alert("Error", "Failed to capture image. Please try again.");
@@ -286,7 +293,7 @@ export default function ScanScreen() {
           )}
           <Button
             mode="outlined"
-            onPress={() => setImageUri(null)} // Clear photo to show camera again
+            onPress={() => { setImageUri(null); setResult(null); }} // Clear photo & result to free memory
             style={styles.retakeButton}
             disabled={processingPhoto}
           >
