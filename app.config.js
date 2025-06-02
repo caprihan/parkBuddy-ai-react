@@ -54,7 +54,10 @@ export default {
       },
         webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
         iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
-        androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID
+        androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
+        mcpClientURL: process.env.EXPO_PUBLIC_MCP_CLIENT_URL,
+        mobileClientUsername: process.env.EXPO_PUBLIC_MOBILE_CLIENT_USERNAME,
+        mobileClientPassword: process.env.EXPO_PUBLIC_MOBILE_CLIENT_PASSWORD,
       }
     }
   }

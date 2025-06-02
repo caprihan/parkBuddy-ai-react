@@ -1,203 +1,176 @@
-// app/index.tsx
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import * as SecureStore from "expo-secure-store";
+// File: app/(auth)/index.tsx
+
+import React, { useEffect, useCallback } from "react";
+import { View, Text, StyleSheet, ActivityIndicator, Platform, Alert } from "react-native"; // Added Alert
 import {
   GoogleSignin,
   GoogleSigninButton,
-  User,
-  isErrorWithCode,
   statusCodes,
+  User, // Keep User type for clarity
 } from "@react-native-google-signin/google-signin";
-import { useRouter } from "expo-router";
-import { useUser } from "../../context/UserContext";
-
-import GoogleSignInButton from "@/components/GoogleSignInButton";
 import Constants from "expo-constants";
+import { useUser } from "../../context/UserContext";
+import { useRouter } from "expo-router";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function LoginScreen() {
-  const { setUser } = useUser();
+  const { user, setUser, loading } = useUser();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const extra = Constants.expoConfig?.extra;
+  console.log("LoginScreen: rendered, loading:", loading, "ctx user:", user);
 
-  // Effect to check for stored session on component mount
+  // Effect for Google Sign-In Configuration (runs once)
   useEffect(() => {
-    const checkStoredSession = async () => {
-      console.log("LoginScreen>>Checking for stored user session in SecureStore");
-      setLoading(true);
-      try {
-        const sessionDataString = await SecureStore.getItemAsync("userSession");
-        if (sessionDataString) {
-          console.log("LoginScreen>>Found stored user session in SecureStore");
-          const sessionData = JSON.parse(sessionDataString);
-          // Here you might want to add token validation logic if your tokens expire
-          // For this example, we assume if it exists, it's usable.
-          setUser(sessionData); // Set user in context
-          router.replace({ // Redirect to main app screen
-            pathname: "/(tabs)/scan", // Or your preferred home screen
-            // params: { user: JSON.stringify(sessionData) }, // If needed by the target screen
-          });
-        }
-      } catch (e) {
-        console.error("LoginScreen>>Failed to load user session from SecureStore", e);
-        // Optionally, clear corrupted data: await SecureStore.deleteItemAsync("userSession");
-      } finally {
-        // Only set loading to false if no session was found,
-        // otherwise, the redirect will happen.
-        // If a session is found and redirect happens, this screen might unmount.
-        const sessionDataString = await SecureStore.getItemAsync("userSession");
-        if (!sessionDataString) {
-          setLoading(false);
-        }
-      }
-    };
-
-    checkStoredSession();
-  }, []); // Empty dependency array ensures this runs only once on mount
-
-  GoogleSignin.configure({
-    webClientId:
-      extra?.webClientId,
-    scopes: ["profile", "email"],
-    offlineAccess: true,
-    iosClientId: extra?.iosClientId,
-  });
-
-  const GoogleLogin = async () => {
-    setLoading(true);
-    // console.log("GoogleLogin>>Starting Google Sign-In process");
-    // check if users' device has google play services
-    try {
-      await GoogleSignin.hasPlayServices({
-        showPlayServicesUpdateDialog: true,
-      });
-      // google services are available
-      //console.log("Google Play Services are available");
-    } catch (err) {
-      console.error("play services are not available");
-      return err;
-    }
-
-    // console.log("GoogleLogin>>Google Play Services are available");
-    // console.log("GoogleLogin>>Configuring Google Sign-In");
-
-    try {
-      // initiates signIn process
-      const response = await GoogleSignin.signIn();
-      // console.log("GoogleLogin>>Google Sign-In response:", response);
-      if (response.type === "success") {
-        return response;
-      } else if (response.type === "cancelled") {
-        // console.warn("GoogleLogin>>User cancelled the sign-in process");
-        setLoading(false);
-        return null; 
-      }// User cancelled the sign-in
-    } catch (error) {
-      if (isErrorWithCode(error)) {
-        switch (error.code) {
-          case statusCodes.IN_PROGRESS:
-            // operation (eg. sign in) already in progress
-            break;
-          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-            // Android only, play services not available or outdated
-            console.error("GoogleLogin>>Play services not available");
-            break;
-          default:
-            // some other error happened
-            console.error("GoogleLogin>>Some other error occurred: ", error);
-        }
-      } else {
-        // an error that's not related to google sign in occurred
-        console.error("GoogleLogin>>Error during Google Sign-In:", error);
-      }
-    }
-  };
-
-  const fetchUserPermissions = async (
-    token: string | undefined,
-    profile: any
-  ) => {
-    if (!token) {
-      setLoading(false); // Ensure loading is stopped if token is missing
-      return;
-    }
-
-    const email = profile?.email;
-
-    if (!email) {
-      setLoading(false); // Ensure loading is stopped if email is missing
-      return;
-    }
-
-    let userSessionData = {
-      token,
-      email
-    };
-    setUser(userSessionData);
-
-    if (userSessionData) {
-      try {
-        await SecureStore.setItemAsync("userSession", JSON.stringify(userSessionData));
-      } catch (e) {
-        console.error("Failed to save user session to SecureStore", e);
-      }
-    }
-
-    router.replace({
-      pathname: "/(tabs)/scan",
-      params: { user: JSON.stringify(profile) } // Consider if you still need to pass full profile here
+    console.log("LoginScreen: Configuring Google Sign-In");
+    GoogleSignin.configure({
+      webClientId: Constants.expoConfig?.extra?.webClientId as string,
+      iosClientId: Constants.expoConfig?.extra?.iosClientId as string,
+      scopes: ["profile", "email"],
     });
-    setLoading(false);
-  };
-  // Google Sign-In workflow
-  const googleSignIn = async () => {
-    setLoading(true);
-    try {
-      const response = await GoogleLogin();
-      // console.log("googleSignIn>>Google Sign-In response:", response);
-      if (!response) {
-        console.warn("googleSignIn>>No response from Google Sign-In");
-        setLoading(false);
-        return;
-      }
+    console.log("LoginScreen: GoogleSignin configured");
+  }, []); // Empty dependency array ensures this runs only once
 
-      // retrieve user data
-      const { idToken, user } = response.data ?? {};
-      if (!idToken) {
-        console.error("No ID token received");
-        return;
-      } else {
-        // console.log("googleSignIn>>ID Token:", idToken);
-        fetchUserPermissions(idToken, user);
-      }
+  // Effect for Silent Sign-In and Navigation Logic
+  useEffect(() => {
+    console.log("LoginScreen: Auth useEffect. Ctx loading:", loading, "Token:", user.googleToken);
 
-      //      if (idToken) {
-      //        await saveToken(idToken, user);
-      // Navigate to the main app screen
-      // Pass the user object as a parameter
-      // router.replace({
-      //   pathname: "/(tabs)/home",
-      //   params: { user: JSON.stringify(user) },
-      // });
-      //      }
-    } catch (error) {
-      console.error("Error during Google Sign-In:", error);
-    } finally {
-      // setLoading(false);
+    if (user.googleToken) {
+      console.log("LoginScreen: User has googleToken, navigating to /scan");
+      router.replace("/(tabs)/scan"); // Navigate to a specific tab or home
+      return;
     }
-  };
 
+    if (loading) {
+      console.log("LoginScreen: Ctx loading, skip silent attempt for now.");
+      return;
+    }
+
+    // Only attempt silent sign-in if not loading and no token
+    const attemptSilentSignIn = async () => {
+      console.log("LoginScreen: Attempting silent sign-in (ctx loaded, no token).");
+      try {
+        const currentUser: User | null = await GoogleSignin.getCurrentUser();
+        console.log("LoginScreen: getCurrentUser result:", currentUser);
+
+        if (currentUser && currentUser.user && currentUser.user.email && currentUser.idToken) {
+          console.log(
+            "LoginScreen: User from getCurrentUser. Email:",
+            currentUser.user.email
+          );
+          setUser({
+            googleToken: currentUser.idToken,
+            googleEmail: currentUser.user.email,
+          });
+          // Navigation will be handled by the effect re-running due to setUser
+        } else {
+          if (currentUser) {
+            console.warn("LoginScreen: getCurrentUser response missing email or idToken.", currentUser);
+          }
+          console.log("LoginScreen: No complete user from getCurrentUser, attempting signInSilently.");
+          const signInSilentlyResponse = await GoogleSignin.signInSilently();
+          console.log("LoginScreen: signInSilently response structure:", signInSilentlyResponse);
+
+          if (signInSilentlyResponse) {
+            const silentData = (signInSilentlyResponse as any).data;
+            const potentialSilentUserObject = silentData || signInSilentlyResponse; // Handles direct User obj or wrapped
+
+            const silentUserDetails = potentialSilentUserObject.user;
+            const silentToken = potentialSilentUserObject.idToken;
+
+            if (silentUserDetails && silentUserDetails.email && silentToken) {
+              console.log("LoginScreen: Silent sign-in successful. Email:", silentUserDetails.email);
+              setUser({
+                googleToken: silentToken,
+                googleEmail: silentUserDetails.email,
+              });
+            } else if (silentToken && (!silentUserDetails || !silentUserDetails.email)) {
+              console.warn("LoginScreen: signInSilently provided idToken but no (or incomplete) user details.", signInSilentlyResponse);
+              // This handles cases like {"data": {"idToken": "..."}}
+              // Consider this state as requiring manual login for now.
+            } else {
+              console.warn("LoginScreen: Email or idToken not found in signInSilently response.", signInSilentlyResponse);
+            }
+          } else {
+            console.log("LoginScreen: signInSilently returned null or falsy (no user or needs explicit sign-in).");
+          }
+        }
+      } catch (error: any) {
+        console.warn("LoginScreen: Silent/getCurrentUser error:", JSON.stringify(error));
+        if (error.code === statusCodes.SIGN_IN_REQUIRED) {
+          console.log("LoginScreen: Silent sign-in: SIGN_IN_REQUIRED. User needs to sign in manually.");
+        } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE && Platform.OS === 'android') {
+          console.error('LoginScreen: Play services not available or outdated for silent sign-in.');
+        } else {
+          console.warn("LoginScreen: Silent sign-in: unhandled error:", error.code, error.message);
+        }
+      }
+    };
+
+    if (!loading && !user.googleToken) {
+      attemptSilentSignIn();
+    }
+  }, [user.googleToken, loading, router, setUser]); // Dependencies for the auth logic
+
+  const GoogleLogin = useCallback(async () => { // Wrapped in useCallback
+    console.log("LoginScreen: GoogleLogin button pressed.");
+    try {
+      await GoogleSignin.hasPlayServices();
+      console.log("LoginScreen: Play Services available, attempting manual signIn.");
+      const signInResponse = await GoogleSignin.signIn();
+      console.log("LoginScreen: Manual signIn response structure:", signInResponse);
+
+      // Handle wrapped response {data: {user, idToken}} or direct User object
+      const signInData = (signInResponse as any).data;
+      const potentialUserObject = signInData || signInResponse;
+
+      const userDetails = potentialUserObject.user;
+      const token = potentialUserObject.idToken;
+
+      if (userDetails && userDetails.email && token) {
+        console.log("LoginScreen: Manual sign-in successful. Email:", userDetails.email);
+        setUser({
+          googleToken: token,
+          googleEmail: userDetails.email,
+        });
+        console.log("LoginScreen: User set after manual login, nav to /(tabs)/scan");
+        router.replace("/(tabs)/scan");
+      } else {
+        console.error("LoginScreen: Email or idToken not found in manual signIn response.", signInResponse);
+        Alert.alert("Sign-In Error", "Could not retrieve complete user information from Google. Please try again.");
+      }
+    } catch (error: any) {
+      console.warn("LoginScreen: GoogleLogin (manual) error:", JSON.stringify(error));
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log("LoginScreen: Manual login: SIGN_IN_CANCELLED.");
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        console.log("LoginScreen: Manual login: IN_PROGRESS.");
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE && Platform.OS === 'android') {
+        console.error("LoginScreen: Manual login: PLAY_SERVICES_NOT_AVAILABLE.");
+      } else {
+        console.warn("LoginScreen: Manual login: unhandled error:", error.code, error.message);
+      }
+    }
+  }, [router, setUser]); // Added dependencies for useCallback
+
+  console.log("LoginScreen: Rendering. Ctx loading:", loading, "Token:", user.googleToken);
+  // Conditional rendering logic: Show loading indicator if context is loading OR if there's a token but navigation hasn't happened yet.
+  // The `!router.canGoBack()` might not be the most reliable check here.
+  // A simpler check is if `loading` is true, or if `user.googleToken` is present (implying a navigation is or was pending).
+  if (loading || user.googleToken) {
+    console.log("LoginScreen: Displaying loading indicator (ctx loading or token present).");
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" />
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  console.log("LoginScreen: Displaying Sign-In button.");
   return (
     <View style={styles.container}>
-      {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : (
-        <>
-          <Text style={styles.title}>ParkBuddy-AI</Text>
-          <GoogleSignInButton onPress={googleSignIn} style={{ width: 280 }} />
-        </>
-      )}
+      <Text style={styles.title}>ParkBuddyAI</Text>
+      <Text style={styles.subtitle}>Sign in to find your spot</Text>
+      <GoogleSignInButton onPress={GoogleLogin} />
     </View>
   );
 }
@@ -208,10 +181,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    backgroundColor: "#F5F5F5",
   },
   title: {
-    fontSize: 42,
-    marginBottom: 20,
-    color: "#5f6368",
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: "#555",
+    marginBottom: 40,
+    textAlign: "center",
   },
 });
