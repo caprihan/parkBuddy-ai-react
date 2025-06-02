@@ -1,40 +1,50 @@
 // File: app/(tabs)/scan.tsx
 
-import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Image, ActivityIndicator, Alert, SafeAreaView } from "react-native"; // Added SafeAreaView
+import React, { useState, useEffect, useRef } from "react"; // Added useRef
+import { View, StyleSheet, Image, ActivityIndicator, Alert, SafeAreaView } from "react-native";
 import { Text, Button, Card, IconButton, useTheme } from "react-native-paper";
-import * as ImagePicker from "expo-image-picker";
+// import * as ImagePicker from "expo-image-picker"; // Removed ImagePicker
+import { CameraView, useCameraPermissions } from "expo-camera"; // Added CameraView and useCameraPermissions
 import Constants from "expo-constants";
 import { useUser } from "../../context/UserContext";
 import { useRouter } from "expo-router";
+import * as Localization from 'expo-localization';
 
 export default function ScanScreen() {
   const theme = useTheme();
   const router = useRouter();
   console.log("ScanScreen: Rendered");
 
-  const { user, getValidJwt, loading: userContextLoading, logout } = useUser(); // Added logout
+  const { user, getValidJwt, loading: userContextLoading, logout } = useUser();
   console.log(`ScanScreen: UserContext initial - user.googleToken: ${!!user.googleToken}, contextLoading: ${userContextLoading}`);
 
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [processingPhoto, setProcessingPhoto] = useState(false);
-  const [result, setResult] = useState<{
-    decision: string;
-    parkTill: string;
-    explanation: string;
-  } | null>(null);
+  const [result, setResult] = useState<{ decision: string; parkTill: string | null; explanation: string } | null>(null);
+
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null);
 
   useEffect(() => {
     console.log(`ScanScreen: useEffect for permissions and auth check. user.googleToken: ${!!user.googleToken}, contextLoading: ${userContextLoading}`);
-    (async () => {
-      console.log("ScanScreen: Requesting camera permissions...");
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      console.log("ScanScreen: Camera permission status:", status);
-      if (status !== "granted") {
-        Alert.alert("Permission Denied", "Camera permission is required to scan parking signs.");
-        console.warn("ScanScreen: Camera permission not granted.");
-      }
-    })();
+    
+    if (!permission) {
+      // Permissions are still loading, request them
+      (async () => {
+        console.log("ScanScreen: Requesting camera permissions via useCameraPermissions...");
+        const perm = await requestPermission();
+        console.log("ScanScreen: Camera permission status from hook:", perm?.status);
+        if (perm && perm.status !== "granted") {
+          Alert.alert("Permission Denied", "Camera permission is required to scan parking signs.");
+          console.warn("ScanScreen: Camera permission not granted.");
+        }
+      })();
+    } else if (!permission.granted) {
+        // Permissions are determined but not granted
+        // Optionally, prompt again or show a message. For now, an alert is shown if initial request failed.
+        console.warn("ScanScreen: Camera permission was not granted on previous check.");
+    }
+
 
     if (!userContextLoading && !user.googleToken) {
       console.log("ScanScreen: useEffect - No googleToken AND userContext not loading. Redirecting to /(auth).");
@@ -44,7 +54,7 @@ export default function ScanScreen() {
     } else {
       console.log("ScanScreen: useEffect - googleToken present. No redirect needed from useEffect.");
     }
-  }, [user.googleToken, userContextLoading, router]);
+  }, [user.googleToken, userContextLoading, router, permission, requestPermission]);
 
   const takePhoto = async () => {
     console.log(`ScanScreen: takePhoto called. user.googleToken: ${!!user.googleToken}, contextLoading: ${userContextLoading}`);
@@ -61,23 +71,18 @@ export default function ScanScreen() {
 
     console.log("ScanScreen: Launching camera...");
     try {
-      const photoResult = await ImagePicker.launchCameraAsync({
-        base64: true,
+      const photoResult = await cameraRef.current?.takePictureAsync({
         quality: 0.7,
+        // base64: true, // Removed base64 option
       });
 
-      if (!photoResult.canceled && photoResult.assets && photoResult.assets.length > 0) {
-        const asset = photoResult.assets[0];
-        console.log("ScanScreen: Photo taken, URI:", asset.uri);
-        setImageUri(asset.uri);
-        if (asset.base64) {
-          processPhoto(asset.base64);
-        } else {
-          console.error("ScanScreen: Photo taken but base64 data is missing.");
-          Alert.alert("Error", "Failed to get image data. Please try again.");
-        }
+      if (photoResult && photoResult.uri) {
+        console.log("ScanScreen: Photo taken, URI:", photoResult.uri);
+        setImageUri(photoResult.uri);
+        processPhoto(photoResult.uri); // Pass URI to processPhoto
       } else {
-        console.log("ScanScreen: Photo capture canceled or no assets found.");
+        console.log("ScanScreen: Photo capture canceled or no assets found, or URI missing.");
+        Alert.alert("Error", "Failed to capture image. Please try again.");
       }
     } catch (error) {
       console.error("ScanScreen: Error launching camera or processing result:", error);
@@ -85,8 +90,8 @@ export default function ScanScreen() {
     }
   };
 
-  const processPhoto = async (base64: string) => {
-    console.log(`ScanScreen: processPhoto called. user.googleToken: ${!!user.googleToken}, contextLoading: ${userContextLoading}`);
+  const processPhoto = async (photoUri: string) => { // Changed parameter from base64 to photoUri
+    console.log(`ScanScreen: processPhoto called with URI: ${photoUri}. user.googleToken: ${!!user.googleToken}, contextLoading: ${userContextLoading}`);
     setProcessingPhoto(true);
     setResult(null);
     try {
@@ -103,33 +108,94 @@ export default function ScanScreen() {
 
       const token = await getValidJwt();
       console.log("ScanScreen: getValidJwt successful, proceeding with API call.");
-      const BACKEND_HOST = (Constants.expoConfig?.extra ?? {})
-        .backendHost as string;
+      const MCP_CLIENT_URL = (Constants.expoConfig?.extra ?? {}) 
+        .mcpClientURL as string;
 
-      console.log(`ScanScreen: Sending request to ${BACKEND_HOST}/parking/sign`);
-      const response = await fetch(`${BACKEND_HOST}/parking/sign`, {
+      const formData = new FormData();
+      const filename = photoUri.split('/').pop() || "photo.jpg";
+      let type = "image/jpeg"; // Default type
+      const extensionMatch = /\.(\w+)$/.exec(filename);
+      if (extensionMatch && extensionMatch[1]) {
+        type = `image/${extensionMatch[1].toLowerCase() === 'jpg' ? 'jpeg' : extensionMatch[1].toLowerCase()}`;
+      }
+      
+      formData.append('file', {
+        uri: photoUri,
+        name: filename,
+        type: type,
+      } as any); // Using 'as any' to handle potential TypeScript strictness with FormData append for files in React Native
+      // formData.append('timestamp', new Date().toISOString()); // Backend expects timestamp in the body if not using JSON
+
+      console.log(`ScanScreen: Sending request to ${MCP_CLIENT_URL}/signs/readParkingSign as multipart/form-data`);
+
+      // Generate current datetime string with local timezone offset manually
+      const date = new Date();
+      const pad = (num: number, size = 2) => String(num).padStart(size, '0');
+      const offsetMinutes = -date.getTimezoneOffset(); // inverted to get + for UTC+N
+      const offsetSign = offsetMinutes >= 0 ? '+' : '-';
+      const absOffset = Math.abs(offsetMinutes);
+      const offsetHours = pad(Math.floor(absOffset / 60));
+      const offsetMins = pad(absOffset % 60);
+      const timezoneOffset = `${offsetSign}${offsetHours}:${offsetMins}`;
+      const currentDatetime =
+        `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+        `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}` +
+        `.${String(date.getMilliseconds()).padStart(3, '0')}${timezoneOffset}`;
+      
+      console.log("ScanScreen: Current datetime for request header (local):", currentDatetime);
+
+      const response = await fetch(`${MCP_CLIENT_URL}/signs/readParkingSign`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          // 'Content-Type': 'multipart/form-data', // fetch automatically sets this with boundary for FormData
           Authorization: `Bearer ${token}`,
+          "current-datetime": currentDatetime,
         },
-        body: JSON.stringify({
-          image: base64,
-          timestamp: new Date().toISOString(),
-        }),
+        body: formData, // Send formData object
       });
+      
       console.log("ScanScreen: API response status:", response.status);
       if (!response.ok) {
         const errorText = await response.text();
         console.error("ScanScreen: Sign parse API failed. Status:", response.status, "Response:", errorText);
         throw new Error(`Sign parse failed: ${response.status}. ${errorText}`);
       }
-      const json = await response.json();
-      console.log("ScanScreen: API response JSON:", json);
+      const jsonResponse = await response.json();
+      console.log("ScanScreen: API response JSON (raw):", jsonResponse);
+      // If backend returned JSON within markdown fences, clean and parse it
+      let parsedData: any = jsonResponse;
+      if (typeof jsonResponse.result === 'string') {
+        const cleaned = jsonResponse.result
+          .replace(/^```json\s*/, '')
+          .replace(/\s*```$/, '');
+        console.log("ScanScreen: Cleaned API result string:", cleaned);
+        try {
+          parsedData = JSON.parse(cleaned);
+        } catch (parseErr) {
+          console.warn("ScanScreen: Failed to parse cleaned API result:", parseErr);
+          // Fallback: manual parse of lines like '- Key: Value,'
+          const obj: any = {};
+          cleaned.split(/\r?\n/).forEach((line: string) => {
+            const trimmed = line.trim();
+            if (!trimmed) return;
+            // Remove leading hyphens or bullets
+            const withoutDash = trimmed.replace(/^[-*]\s*/, '');
+            const [rawKey, ...rest] = withoutDash.split(':');
+            if (!rest.length) return;
+            const key = rawKey.trim();
+            let value = rest.join(':').trim();
+            // Remove trailing commas
+            if (value.endsWith(',')) value = value.slice(0, -1);
+            obj[key] = value;
+          });
+          parsedData = obj;
+        }
+      }
+      // Map parsed data to result state
       setResult({
-        decision: json.decision,
-        parkTill: json.parkTill,
-        explanation: json.explanation,
+        decision: parsedData.Decision ?? parsedData.decision,
+        parkTill: parsedData.hasOwnProperty("Park Till") ? parsedData["Park Till"] : parsedData.parkTill,
+        explanation: parsedData.Explanation ?? parsedData.explanation,
       });
     } catch (e: any) {
       console.warn("ScanScreen: processPhoto error - Message:", e.message, "Full error:", e);
@@ -137,7 +203,11 @@ export default function ScanScreen() {
         console.log("ScanScreen: processPhoto error indicates 'Not signed in', redirecting to /(auth).");
         router.replace("/(auth)");
       } else {
-        Alert.alert("Processing Error", "Failed to parse sign. Please try again.");
+        let alertMessage = "Failed to process photo. Please try again."; // Default message
+        if (e && e.message) {
+          alertMessage = e.message; // Use the more specific message from the caught error
+        }
+        Alert.alert("Processing Error", alertMessage);
       }
     } finally {
       console.log("ScanScreen: processPhoto finished.");
@@ -162,7 +232,28 @@ export default function ScanScreen() {
     );
   }
 
-  console.log("ScanScreen: Rendering main content.");
+  // Handle camera permissions
+  if (!permission) {
+    // Permissions are still loading
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text style={{ marginTop: 10 }}>Loading camera permissions...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (!permission.granted) {
+    // Permissions are not granted
+    return (
+      <SafeAreaView style={styles.centeredMessageContainer}>
+        <Text style={{ textAlign: 'center', marginBottom: 20 }}>Camera permission is required to scan parking signs.</Text>
+        <Button onPress={() => requestPermission()} mode="outlined">Grant Permission</Button>
+      </SafeAreaView>
+    );
+  }
+
+  console.log("ScanScreen: Rendering main content. ImageURI:", imageUri);
   return (
     <SafeAreaView style={styles.safeAreaContainer}> 
       <View style={styles.headerContainer}>
@@ -171,72 +262,94 @@ export default function ScanScreen() {
           size={24}
           onPress={handleLogout}
           style={styles.logoutButton}
+          // iconColor={theme.colors.primary} // Consider using theme color
         />
       </View>
-      <View style={styles.contentContainer}>
-        <Button
-          mode="contained"
-          onPress={takePhoto}
-          icon="camera"
-          style={styles.captureButton}
-          disabled={processingPhoto}
-        >
-          Take Photo of Parking Sign
-        </Button>
 
-        {processingPhoto && (
-          <ActivityIndicator
-            animating
-            size="large"
-            color={theme.colors.primary}
-            style={{ marginVertical: 10 }}
-          />
-        )}
+      {!imageUri ? (
+        <View style={styles.cameraContainer}>
+          <CameraView style={styles.cameraPreview} ref={cameraRef} facing='back' />
+          <Button
+            mode="contained"
+            onPress={takePhoto}
+            icon="camera"
+            style={styles.captureButton}
+            disabled={processingPhoto}
+          >
+            Take Photo
+          </Button>
+        </View>
+      ) : (
+        <View style={styles.contentContainer}>
+          {imageUri && (
+            <Image source={{ uri: imageUri }} style={styles.previewImage} />
+          )}
+          <Button
+            mode="outlined"
+            onPress={() => setImageUri(null)} // Clear photo to show camera again
+            style={styles.retakeButton}
+            disabled={processingPhoto}
+          >
+            Retake Photo
+          </Button>
 
-        {imageUri && (
-          <Image source={{ uri: imageUri }} style={styles.previewImage} />
-        )}
-
-        {result && (
-          <Card style={styles.resultCard}>
-            <Card.Title
-              title={`Decision: ${result.decision}`}
-              subtitle={`Park Till: ${result.parkTill}`}
-              left={(props: { size: number; }) => (
-                <IconButton
-                  icon={
-                    result.decision === "Yes"
-                      ? "check-circle"
-                      : "close-circle"
-                  }
-                  size={props.size} // Use size from props
-                  iconColor={ // Use iconColor prop for react-native-paper IconButton
-                    result.decision === "Yes"
-                      ? "#4CAF50" // Fallback green for success
-                      : "#F44336" // Fallback red for error
-                  }
-                />
-              )}
+          {processingPhoto && (
+            <ActivityIndicator
+              animating
+              size="large"
+              color={theme.colors.primary}
+              style={{ marginVertical: 10 }}
             />
-            <Card.Content>
-              <Text>{result.explanation}</Text>
-            </Card.Content>
-          </Card>
-        )}
-      </View>
+          )}
+
+          {result && (
+            <Card style={styles.resultCard}>
+              <Card.Title
+                title={`Decision: ${result.decision}`}
+                subtitle={`Park Till: ${result.parkTill}`}
+                left={(props: { size: number; }) => (
+                  <IconButton
+                    icon={
+                      result.decision === "Yes"
+                        ? "parking"
+                        : "close-circle"
+                    }
+                    size={props.size} // Use size from props
+                    iconColor={ // Use iconColor prop for react-native-paper IconButton
+                      result.decision === "Yes"
+                        ? theme.colors.tertiary // Using theme color
+                        : theme.colors.error // Using theme color
+                    }
+                  />
+                )}
+              />
+              <Card.Content>
+                <Text>{result.explanation}</Text>
+              </Card.Content>
+            </Card>
+          )}
+        </View>
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeAreaContainer: { // Renamed from container to safeAreaContainer, added flex: 1
+  safeAreaContainer: { 
     flex: 1,
-    backgroundColor: "#F5F5F5", // Optional: set a background color for the safe area
+    backgroundColor: "#F5F5F5", 
   },
-  loadingContainer: { // Style for the loading state
+  loadingContainer: { 
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#F5F5F5",
+  },
+  centeredMessageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
     backgroundColor: "#F5F5F5",
   },
   headerContainer: {
@@ -248,17 +361,36 @@ const styles = StyleSheet.create({
   logoutButton: {
     // Additional styling for the button if needed, e.g., margin
   },
-  contentContainer: { // Extracted from the old container style
+  cameraContainer: { // Container for camera preview and its capture button
+    flex: 1,
+    // justifyContent: 'center', // This might not be needed if camera preview is flex: 1
+    alignItems: 'center',
+  },
+  cameraPreview: {
+    flex: 1, // Make camera preview take available space
+    width: '100%', // Ensure it spans the width
+    // aspectRatio: 3 / 4, // Or your desired aspect ratio, adjust as needed
+  },
+  contentContainer: { 
     flex: 1, 
     alignItems: "center", 
     padding: 16 
   },
-  captureButton: { marginVertical: 16 },
+  captureButton: { 
+    marginVertical: 20, // Give some space around the capture button
+    // position: 'absolute', // Optionally position it over the camera view
+    // bottom: 20,
+    // alignSelf: 'center'
+  },
+  retakeButton: {
+    marginVertical: 16,
+  },
   previewImage: {
-    width: 240,
-    height: 240,
+    width: 240, // Adjust as needed
+    height: 320, // Adjust as needed, consider aspect ratio
     marginVertical: 12,
     borderRadius: 8,
+    // resizeMode: 'contain', // Or 'cover'
   },
   resultCard: { width: "100%", marginTop: 16 },
 });

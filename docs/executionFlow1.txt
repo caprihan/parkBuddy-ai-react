@@ -1,0 +1,110 @@
+Execution Flow:
+
+ (NOBRIDGE) LOG  LoginScreen: rendered, loading: true ctx user: {"googleEmail": null, "googleToken": null}
+ (NOBRIDGE) LOG  LoginScreen: Rendering. Ctx loading: true Token: null
+ (NOBRIDGE) LOG  LoginScreen: Displaying loading indicator (ctx loading or token present).
+ (NOBRIDGE) LOG  LoginScreen: Configuring Google Sign-In
+ (NOBRIDGE) LOG  LoginScreen: GoogleSignin configured
+ (NOBRIDGE) LOG  LoginScreen: Auth useEffect. Ctx loading: true Token: null
+ (NOBRIDGE) LOG  LoginScreen: Ctx loading, skip silent attempt for now.
+ (NOBRIDGE) LOG  LoginScreen: rendered, loading: true ctx user: {"googleEmail": "gaurav.caprihan@gmail.com", "googleToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJiNDM0Njk1OTQ0NTE4MjAxNDhiMzM5YzU4OGFlZGUzMDUxMDM5MTkiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0NDY1ODgxODcyNDgtNjBqMGxhZWhxN2R2dXUzN3Z1ZGI0aTNwaDAwdWcwaHUuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0NDY1ODgxODcyNDgtbjRxYWNndHY3ajkwMXNlNmk0NW10c24wZW85dnJxcmYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDA4ODU5NDAzMzA5OTA5ODU1MzciLCJlbWFpbCI6ImdhdXJhdi5jYXByaWhhbkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InN3dm9SSWd5OHlrd3FqYmlWMTZOeVEiLCJub25jZSI6IlQzaHJWZVNFU2tYaWx1ZXY3NWJxSW1Wb1hlTzBLZTVONkM3TXhMZmhLOFkiLCJuYW1lIjoiR2F1cmF2IENhcHJpaGFuIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0wya0p1VVFic1NxdDhGQkdtU012ZEJONHhsdWpNMzE2Wnc1YkkzU2xkcUIzX20zXzRTPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IkdhdXJhdiIsImZhbWlseV9uYW1lIjoiQ2FwcmloYW4iLCJpYXQiOjE3NDg4NTEyMDEsImV4cCI6MTc0ODg1NDgwMX0.UCnso1o9ZjEcrneSFvt3Lgbyy3zqG_PovHBrz2gbyj6DmV9V1Ksy35KGrVYOFIsrpAv9mLcNv1mJsQkVltVoiDcWPEN2uMcid3gA1Y_hYVMzDVQiiIO_QjQ84FFK1SAqsuDPJcheExydaTUKy5wzqNKd4NpWr4IHV0cqrR7Yk1zQy8YGfRNacLQR6jVN3oxZ2jJlkIjVnzsDsfLXrnYWrsoczC-UxDYbk4KAE-sJqUp0KC5DsUPA4UhxkgRXUFpYGXlE9vpMsE5Ge2a7KCwXP7K4Mha4P1d7YzUyR6gMhot226-EKsfI5zwLoexPA8_EHRGVvOMkIAKWShb5RSIoLg"}
+ (NOBRIDGE) LOG  LoginScreen: Rendering. Ctx loading: true Token: eyJhbGciOiJSUzI1NiIsImtpZCI6ImJiNDM0Njk1OTQ0NTE4MjAxNDhiMzM5YzU4OGFlZGUzMDUxMDM5MTkiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0NDY1ODgxODcyNDgtNjBqMGxhZWhxN2R2dXUzN3Z1ZGI0aTNwaDAwdWcwaHUuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0NDY1ODgxODcyNDgtbjRxYWNndHY3ajkwMXNlNmk0NW10c24wZW85dnJxcmYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDA4ODU5NDAzMzA5OTA5ODU1MzciLCJlbWFpbCI6ImdhdXJhdi5jYXByaWhhbkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InN3dm9SSWd5OHlrd3FqYmlWMTZOeVEiLCJub25jZSI6IlQzaHJWZVNFU2tYaWx1ZXY3NWJxSW1Wb1hlTzBLZTVONkM3TXhMZmhLOFkiLCJuYW1lIjoiR2F1cmF2IENhcHJpaGFuIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0wya0p1VVFic1NxdDhGQkdtU012ZEJONHhsdWpNMzE2Wnc1YkkzU2xkcUIzX20zXzRTPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IkdhdXJhdiIsImZhbWlseV9uYW1lIjoiQ2FwcmloYW4iLCJpYXQiOjE3NDg4NTEyMDEsImV4cCI6MTc0ODg1NDgwMX0.UCnso1o9ZjEcrneSFvt3Lgbyy3zqG_PovHBrz2gbyj6DmV9V1Ksy35KGrVYOFIsrpAv9mLcNv1mJsQkVltVoiDcWPEN2uMcid3gA1Y_hYVMzDVQiiIO_QjQ84FFK1SAqsuDPJcheExydaTUKy5wzqNKd4NpWr4IHV0cqrR7Yk1zQy8YGfRNacLQR6jVN3oxZ2jJlkIjVnzsDsfLXrnYWrsoczC-UxDYbk4KAE-sJqUp0KC5DsUPA4UhxkgRXUFpYGXlE9vpMsE5Ge2a7KCwXP7K4Mha4P1d7YzUyR6gMhot226-EKsfI5zwLoexPA8_EHRGVvOMkIAKWShb5RSIoLg
+ (NOBRIDGE) LOG  LoginScreen: Displaying loading indicator (ctx loading or token present).
+ (NOBRIDGE) LOG  LoginScreen: Auth useEffect. Ctx loading: true Token: eyJhbGciOiJSUzI1NiIsImtpZCI6ImJiNDM0Njk1OTQ0NTE4MjAxNDhiMzM5YzU4OGFlZGUzMDUxMDM5MTkiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0NDY1ODgxODcyNDgtNjBqMGxhZWhxN2R2dXUzN3Z1ZGI0aTNwaDAwdWcwaHUuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0NDY1ODgxODcyNDgtbjRxYWNndHY3ajkwMXNlNmk0NW10c24wZW85dnJxcmYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDA4ODU5NDAzMzA5OTA5ODU1MzciLCJlbWFpbCI6ImdhdXJhdi5jYXByaWhhbkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InN3dm9SSWd5OHlrd3FqYmlWMTZOeVEiLCJub25jZSI6IlQzaHJWZVNFU2tYaWx1ZXY3NWJxSW1Wb1hlTzBLZTVONkM3TXhMZmhLOFkiLCJuYW1lIjoiR2F1cmF2IENhcHJpaGFuIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0wya0p1VVFic1NxdDhGQkdtU012ZEJONHhsdWpNMzE2Wnc1YkkzU2xkcUIzX20zXzRTPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IkdhdXJhdiIsImZhbWlseV9uYW1lIjoiQ2FwcmloYW4iLCJpYXQiOjE3NDg4NTEyMDEsImV4cCI6MTc0ODg1NDgwMX0.UCnso1o9ZjEcrneSFvt3Lgbyy3zqG_PovHBrz2gbyj6DmV9V1Ksy35KGrVYOFIsrpAv9mLcNv1mJsQkVltVoiDcWPEN2uMcid3gA1Y_hYVMzDVQiiIO_QjQ84FFK1SAqsuDPJcheExydaTUKy5wzqNKd4NpWr4IHV0cqrR7Yk1zQy8YGfRNacLQR6jVN3oxZ2jJlkIjVnzsDsfLXrnYWrsoczC-UxDYbk4KAE-sJqUp0KC5DsUPA4UhxkgRXUFpYGXlE9vpMsE5Ge2a7KCwXP7K4Mha4P1d7YzUyR6gMhot226-EKsfI5zwLoexPA8_EHRGVvOMkIAKWShb5RSIoLg
+ (NOBRIDGE) LOG  LoginScreen: User has googleToken, navigating to /scan
+ (NOBRIDGE) LOG  ScanScreen: Rendered
+ (NOBRIDGE) LOG  ScanScreen: UserContext initial - user.googleToken: true, contextLoading: true
+ (NOBRIDGE) LOG  ScanScreen: Rendering loading indicator due to userContextLoading.
+ (NOBRIDGE) LOG  ScanScreen: useEffect for permissions and auth check. user.googleToken: true, contextLoading: true
+ (NOBRIDGE) LOG  ScanScreen: Requesting camera permissions via useCameraPermissions...
+ (NOBRIDGE) LOG  ScanScreen: useEffect - userContext is loading, deferring auth check.
+ (NOBRIDGE) LOG  ScanScreen: Camera permission status from hook: granted
+ (NOBRIDGE) LOG  ScanScreen: Rendered
+ (NOBRIDGE) LOG  ScanScreen: UserContext initial - user.googleToken: true, contextLoading: true
+ (NOBRIDGE) LOG  ScanScreen: Rendering loading indicator due to userContextLoading.
+ (NOBRIDGE) LOG  ScanScreen: useEffect for permissions and auth check. user.googleToken: true, contextLoading: true
+ (NOBRIDGE) LOG  ScanScreen: useEffect - userContext is loading, deferring auth check.
+ (NOBRIDGE) LOG  ScanScreen: Rendered
+ (NOBRIDGE) LOG  ScanScreen: UserContext initial - user.googleToken: true, contextLoading: false
+ (NOBRIDGE) LOG  ScanScreen: Rendering main content. ImageURI: null
+ (NOBRIDGE) LOG  ScanScreen: useEffect for permissions and auth check. user.googleToken: true, contextLoading: false
+ (NOBRIDGE) LOG  ScanScreen: useEffect - googleToken present. No redirect needed from useEffect.
+ (NOBRIDGE) LOG  UserProvider: Initializing
+ (NOBRIDGE) LOG  UserProvider: Initializing user state
+ (NOBRIDGE) LOG  UserProvider: Initializing backendJwt state
+ (NOBRIDGE) LOG  UserProvider: Initializing backendJwtExpiry state
+ (NOBRIDGE) LOG  UserProvider: Initializing loading state to true
+ (NOBRIDGE) LOG  UserProvider: Initializing error state to null
+ (NOBRIDGE) LOG  UserProvider: Rendering Provider. Current state: {"backendJwtExists": false, "backendJwtExpiry": 0, "error": null, "loading": true, "user": {"googleEmail": null, "googleToken": null}}
+ (NOBRIDGE) LOG  UserProvider: useEffect A - Mount: Attempting to restore session.
+ (NOBRIDGE) LOG  UserProvider: useEffect A - Reading userSession from SecureStore.
+ (NOBRIDGE) LOG  UserProvider: useEffect B - User state changed: {"googleEmail": null, "googleToken": null}
+ (NOBRIDGE) LOG  UserProvider: useEffect B - User data is null/incomplete, deleting userSession from SecureStore.
+ (NOBRIDGE) LOG  UserProvider: useEffect C - backendJwt or backendJwtExpiry changed. JWT: null, Expiry: 0
+ (NOBRIDGE) LOG  UserProvider: useEffect C - backendJwt is null or expired, deleting from SecureStore.
+ (NOBRIDGE) LOG  UserProvider: useEffect A - Found stored userSession: {"googleEmail": "gaurav.caprihan@gmail.com", "googleToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJiNDM0Njk1OTQ0NTE4MjAxNDhiMzM5YzU4OGFlZGUzMDUxMDM5MTkiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0NDY1ODgxODcyNDgtNjBqMGxhZWhxN2R2dXUzN3Z1ZGI0aTNwaDAwdWcwaHUuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0NDY1ODgxODcyNDgtbjRxYWNndHY3ajkwMXNlNmk0NW10c24wZW85dnJxcmYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDA4ODU5NDAzMzA5OTA5ODU1MzciLCJlbWFpbCI6ImdhdXJhdi5jYXByaWhhbkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InN3dm9SSWd5OHlrd3FqYmlWMTZOeVEiLCJub25jZSI6IlQzaHJWZVNFU2tYaWx1ZXY3NWJxSW1Wb1hlTzBLZTVONkM3TXhMZmhLOFkiLCJuYW1lIjoiR2F1cmF2IENhcHJpaGFuIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0wya0p1VVFic1NxdDhGQkdtU012ZEJONHhsdWpNMzE2Wnc1YkkzU2xkcUIzX20zXzRTPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IkdhdXJhdiIsImZhbWlseV9uYW1lIjoiQ2FwcmloYW4iLCJpYXQiOjE3NDg4NTEyMDEsImV4cCI6MTc0ODg1NDgwMX0.UCnso1o9ZjEcrneSFvt3Lgbyy3zqG_PovHBrz2gbyj6DmV9V1Ksy35KGrVYOFIsrpAv9mLcNv1mJsQkVltVoiDcWPEN2uMcid3gA1Y_hYVMzDVQiiIO_QjQ84FFK1SAqsuDPJcheExydaTUKy5wzqNKd4NpWr4IHV0cqrR7Yk1zQy8YGfRNacLQR6jVN3oxZ2jJlkIjVnzsDsfLXrnYWrsoczC-UxDYbk4KAE-sJqUp0KC5DsUPA4UhxkgRXUFpYGXlE9vpMsE5Ge2a7KCwXP7K4Mha4P1d7YzUyR6gMhot226-EKsfI5zwLoexPA8_EHRGVvOMkIAKWShb5RSIoLg"}
+ (NOBRIDGE) LOG  UserProvider: useEffect A - Reading backendJwt from SecureStore.
+ (NOBRIDGE) LOG  UserProvider: useEffect B - userSession deleted.
+ (NOBRIDGE) LOG  UserProvider: Initializing
+ (NOBRIDGE) LOG  UserProvider: Rendering Provider. Current state: {"backendJwtExists": false, "backendJwtExpiry": 0, "error": null, "loading": true, "user": {"googleEmail": "gaurav.caprihan@gmail.com", "googleToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJiNDM0Njk1OTQ0NTE4MjAxNDhiMzM5YzU4OGFlZGUzMDUxMDM5MTkiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0NDY1ODgxODcyNDgtNjBqMGxhZWhxN2R2dXUzN3Z1ZGI0aTNwaDAwdWcwaHUuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0NDY1ODgxODcyNDgtbjRxYWNndHY3ajkwMXNlNmk0NW10c24wZW85dnJxcmYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDA4ODU5NDAzMzA5OTA5ODU1MzciLCJlbWFpbCI6ImdhdXJhdi5jYXByaWhhbkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InN3dm9SSWd5OHlrd3FqYmlWMTZOeVEiLCJub25jZSI6IlQzaHJWZVNFU2tYaWx1ZXY3NWJxSW1Wb1hlTzBLZTVONkM3TXhMZmhLOFkiLCJuYW1lIjoiR2F1cmF2IENhcHJpaGFuIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0wya0p1VVFic1NxdDhGQkdtU012ZEJONHhsdWpNMzE2Wnc1YkkzU2xkcUIzX20zXzRTPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IkdhdXJhdiIsImZhbWlseV9uYW1lIjoiQ2FwcmloYW4iLCJpYXQiOjE3NDg4NTEyMDEsImV4cCI6MTc0ODg1NDgwMX0.UCnso1o9ZjEcrneSFvt3Lgbyy3zqG_PovHBrz2gbyj6DmV9V1Ksy35KGrVYOFIsrpAv9mLcNv1mJsQkVltVoiDcWPEN2uMcid3gA1Y_hYVMzDVQiiIO_QjQ84FFK1SAqsuDPJcheExydaTUKy5wzqNKd4NpWr4IHV0cqrR7Yk1zQy8YGfRNacLQR6jVN3oxZ2jJlkIjVnzsDsfLXrnYWrsoczC-UxDYbk4KAE-sJqUp0KC5DsUPA4UhxkgRXUFpYGXlE9vpMsE5Ge2a7KCwXP7K4Mha4P1d7YzUyR6gMhot226-EKsfI5zwLoexPA8_EHRGVvOMkIAKWShb5RSIoLg"}}
+ (NOBRIDGE) LOG  UserProvider: useEffect B - User state changed: {"googleEmail": "gaurav.caprihan@gmail.com", "googleToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJiNDM0Njk1OTQ0NTE4MjAxNDhiMzM5YzU4OGFlZGUzMDUxMDM5MTkiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0NDY1ODgxODcyNDgtNjBqMGxhZWhxN2R2dXUzN3Z1ZGI0aTNwaDAwdWcwaHUuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0NDY1ODgxODcyNDgtbjRxYWNndHY3ajkwMXNlNmk0NW10c24wZW85dnJxcmYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDA4ODU5NDAzMzA5OTA5ODU1MzciLCJlbWFpbCI6ImdhdXJhdi5jYXByaWhhbkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InN3dm9SSWd5OHlrd3FqYmlWMTZOeVEiLCJub25jZSI6IlQzaHJWZVNFU2tYaWx1ZXY3NWJxSW1Wb1hlTzBLZTVONkM3TXhMZmhLOFkiLCJuYW1lIjoiR2F1cmF2IENhcHJpaGFuIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0wya0p1VVFic1NxdDhGQkdtU012ZEJONHhsdWpNMzE2Wnc1YkkzU2xkcUIzX20zXzRTPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IkdhdXJhdiIsImZhbWlseV9uYW1lIjoiQ2FwcmloYW4iLCJpYXQiOjE3NDg4NTEyMDEsImV4cCI6MTc0ODg1NDgwMX0.UCnso1o9ZjEcrneSFvt3Lgbyy3zqG_PovHBrz2gbyj6DmV9V1Ksy35KGrVYOFIsrpAv9mLcNv1mJsQkVltVoiDcWPEN2uMcid3gA1Y_hYVMzDVQiiIO_QjQ84FFK1SAqsuDPJcheExydaTUKy5wzqNKd4NpWr4IHV0cqrR7Yk1zQy8YGfRNacLQR6jVN3oxZ2jJlkIjVnzsDsfLXrnYWrsoczC-UxDYbk4KAE-sJqUp0KC5DsUPA4UhxkgRXUFpYGXlE9vpMsE5Ge2a7KCwXP7K4Mha4P1d7YzUyR6gMhot226-EKsfI5zwLoexPA8_EHRGVvOMkIAKWShb5RSIoLg"}
+ (NOBRIDGE) LOG  UserProvider: useEffect B - Persisting userSession to SecureStore.
+ (NOBRIDGE) LOG  UserProvider: useEffect A - Reading backendJwtExpiry from SecureStore.
+ (NOBRIDGE) LOG  UserProvider: useEffect C - backendJwt deleted.
+ (NOBRIDGE) LOG  UserProvider: useEffect B - userSession persisted.
+ (NOBRIDGE) LOG  UserProvider: useEffect A - Stored JWT: not found, Stored Expiry: 0
+ (NOBRIDGE) LOG  UserProvider: useEffect A - No valid backendJwt found or expired. Deleting any stale JWT from SecureStore.
+ (NOBRIDGE) LOG  UserProvider: useEffect A - Setting loading to false.
+ (NOBRIDGE) LOG  UserProvider: Initializing
+ (NOBRIDGE) LOG  UserProvider: Rendering Provider. Current state: {"backendJwtExists": false, "backendJwtExpiry": 0, "error": null, "loading": false, "user": {"googleEmail": "gaurav.caprihan@gmail.com", "googleToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJiNDM0Njk1OTQ0NTE4MjAxNDhiMzM5YzU4OGFlZGUzMDUxMDM5MTkiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0NDY1ODgxODcyNDgtNjBqMGxhZWhxN2R2dXUzN3Z1ZGI0aTNwaDAwdWcwaHUuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0NDY1ODgxODcyNDgtbjRxYWNndHY3ajkwMXNlNmk0NW10c24wZW85dnJxcmYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDA4ODU5NDAzMzA5OTA5ODU1MzciLCJlbWFpbCI6ImdhdXJhdi5jYXByaWhhbkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InN3dm9SSWd5OHlrd3FqYmlWMTZOeVEiLCJub25jZSI6IlQzaHJWZVNFU2tYaWx1ZXY3NWJxSW1Wb1hlTzBLZTVONkM3TXhMZmhLOFkiLCJuYW1lIjoiR2F1cmF2IENhcHJpaGFuIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0wya0p1VVFic1NxdDhGQkdtU012ZEJONHhsdWpNMzE2Wnc1YkkzU2xkcUIzX20zXzRTPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IkdhdXJhdiIsImZhbWlseV9uYW1lIjoiQ2FwcmloYW4iLCJpYXQiOjE3NDg4NTEyMDEsImV4cCI6MTc0ODg1NDgwMX0.UCnso1o9ZjEcrneSFvt3Lgbyy3zqG_PovHBrz2gbyj6DmV9V1Ksy35KGrVYOFIsrpAv9mLcNv1mJsQkVltVoiDcWPEN2uMcid3gA1Y_hYVMzDVQiiIO_QjQ84FFK1SAqsuDPJcheExydaTUKy5wzqNKd4NpWr4IHV0cqrR7Yk1zQy8YGfRNacLQR6jVN3oxZ2jJlkIjVnzsDsfLXrnYWrsoczC-UxDYbk4KAE-sJqUp0KC5DsUPA4UhxkgRXUFpYGXlE9vpMsE5Ge2a7KCwXP7K4Mha4P1d7YzUyR6gMhot226-EKsfI5zwLoexPA8_EHRGVvOMkIAKWShb5RSIoLg"}}
+
+
+Question: In UserProvider, what are the differences between the three useEffect A, B & C? What is done in each?
+Answer: Okay, let's break down the three `useEffect` hooks (A, B, and C) in your `UserProvider` from [`context/UserContext.tsx`]UserContext.tsx ):
+
+**1. `useEffect` A (Mount Effect - Restore Session)**
+
+*   **Trigger**: This hook runs **only once** when the `UserProvider` component is first mounted (added to the screen). This is because its dependency array is empty (`[]`).
+*   **Purpose**: Its primary job is to **initialize the user's session** by trying to load previously stored data from `SecureStore`.
+*   **What it does**:
+    *   It's an asynchronous effect (due to `async () => { ... }`).
+    *   **Restores User Data**: It attempts to read the `userSession` (which contains `googleToken` and `googleEmail`) from `SecureStore` using the key `SECURE_KEY_USER`. If found, it parses the JSON and updates the `user` state using `setUserState()`.
+    *   **Restores Backend JWT**: It attempts to read the `backendJwt` and `backendJwtExpiry` from `SecureStore` using the keys `SECURE_KEY_JWT` and `SECURE_KEY_JWT_EXPIRY`.
+    *   **Validates Backend JWT**: It checks if the stored `backendJwt` exists and if its `storedExpiry` time is still in the future (i.e., not expired).
+        *   If valid, it updates the `backendJwt` and `backendJwtExpiry` states.
+        *   If not valid (missing, or expired), it actively deletes any stale JWT and expiry data from `SecureStore` to ensure no invalid token is used.
+    *   **Handles Errors**: It includes a `try...catch` block to catch any errors during the restoration process (e.g., issues with `SecureStore` access or parsing) and sets an error message in the `error` state.
+    *   **Sets Loading State**: Crucially, in its `finally` block, it sets the `loading` state to `false`. This indicates that the initial attempt to load the session data (whether successful or not) has completed. This `loading` state is important for other parts of your app (like `LoginScreen` or `ScanScreen`) to know when it's safe to check for authentication status.
+    *   **Logging**: It logs various steps of this restoration process.
+
+**2. `useEffect` B (User State Persistence)**
+
+*   **Trigger**: This hook runs whenever the `user` state variable changes. This is specified by its dependency array `[user]`.
+*   **Purpose**: Its job is to **persist the current `user` state** (Google token and email) to `SecureStore` whenever it's updated. This ensures that if the user closes and reopens the app, their Google session details can be restored by `useEffect` A.
+*   **What it does**:
+    *   It's an asynchronous effect.
+    *   **Checks User Data**: It checks if `user.googleToken` and `user.googleEmail` are present (i.e., the user is considered logged in with Google).
+        *   If they are present, it stringifies the `user` object and saves it to `SecureStore` under the key `SECURE_KEY_USER`.
+        *   If they are not present (e.g., after a logout, where `user` is set to `{ googleToken: null, googleEmail: null }`), it deletes the `userSession` from `SecureStore`.
+    *   **Handles Errors**: It includes a `try...catch` to handle potential errors during `SecureStore` operations.
+    *   **Logging**: It logs whether it's persisting or deleting the user session.
+
+**3. `useEffect` C (Backend JWT Persistence)**
+
+*   **Trigger**: This hook runs whenever either the `backendJwt` state variable or the `backendJwtExpiry` state variable changes. This is specified by its dependency array `[backendJwt, backendJwtExpiry]`.
+*   **Purpose**: Its job is to **persist the current `backendJwt` and its `backendJwtExpiry`** to `SecureStore` whenever they are updated (e.g., after a successful token refresh via `getValidJwt`). It also handles cleaning up expired tokens.
+*   **What it does**:
+    *   It's an asynchronous effect.
+    *   **Checks JWT Validity**: It checks if `backendJwt` exists and if `backendJwtExpiry` is still in the future.
+        *   If the JWT is valid, it saves both `backendJwt` and `backendJwtExpiry` (converted to a string) to `SecureStore` under their respective keys.
+        *   If the JWT is null or expired, it deletes both items from `SecureStore`. This ensures that an invalid or expired backend token isn't mistakenly loaded and used later.
+    *   **Handles Errors**: It includes a `try...catch` for `SecureStore` errors.
+    *   **Logging**: It logs its actions related to persisting or deleting the backend JWT.
+
+**In Summary:**
+
+*   **`useEffect` A (Initialization)**: Runs once on mount to load the session from storage and set the initial `loading` state.
+*   **`useEffect` B (User Sync)**: Runs whenever the `user` (Google session) changes, to save it to or delete it from storage.
+*   **`useEffect` C (JWT Sync)**: Runs whenever the `backendJwt` or its expiry changes, to save it to or delete it from storage.
+
+These three hooks work together to manage the lifecycle of your user's authentication state, ensuring it's loaded correctly on app start and persisted correctly when it changes.

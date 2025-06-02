@@ -12,14 +12,20 @@ export default {
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.gauravcaprihan.parkbuddyai"
+      "bundleIdentifier": "com.gauravcaprihan.parkbuddyai",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.gauravcaprihan.parkbuddyai"
+      "package": "com.gauravcaprihan.parkbuddyai",
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",
@@ -27,6 +33,7 @@ export default {
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "expo-localization",
       "expo-router",
       [
         "expo-splash-screen",
