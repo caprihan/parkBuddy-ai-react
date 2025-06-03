@@ -1,7 +1,7 @@
 // File: app/(tabs)/scan.tsx
 
 import React, { useState, useEffect, useRef } from "react"; // Added useRef
-import { View, StyleSheet, Image, ActivityIndicator, Alert, SafeAreaView } from "react-native";
+import { View, StyleSheet, Image, ActivityIndicator, Alert, SafeAreaView, ScrollView } from "react-native";
 import { Text, Button, Card, IconButton, useTheme } from "react-native-paper";
 // import * as ImagePicker from "expo-image-picker"; // Removed ImagePicker
 import { CameraView, useCameraPermissions } from "expo-camera"; // Added CameraView and useCameraPermissions
@@ -78,15 +78,23 @@ export default function ScanScreen() {
 
       if (photoResult?.uri) {
         console.log("ScanScreen: Photo taken, URI:", photoResult.uri);
-        // Resize down for preview and upload to reduce memory
-        const { uri: smallUri } = await ImageManipulator.manipulateAsync(
-          photoResult.uri,
-          [{ resize: { width: 240, height: 320 } }],
-          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
-        );
-        console.log("ScanScreen: Small image URI:", smallUri);
-        setImageUri(smallUri);
-        processPhoto(smallUri);
+        const fullUri = photoResult.uri;
+
+        // Set imageUri to switch to the results view immediately
+        setImageUri(fullUri); 
+
+        // Option B: Kick off upload and resize concurrently - RESIZE PART REMOVED
+        const uploadPromise = processPhoto(fullUri);
+        // const resizePromise = ImageManipulator.manipulateAsync(
+        //   fullUri,
+        //   [{ resize: { width: 240, height: 320 } }],
+        //   { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+        // );
+        // resizePromise.then(({ uri }: { uri: string }) => { // Type annotation for destructuring
+        //   console.log("ScanScreen: Small image URI (Option B):", uri);
+        //   setImageUri(uri);
+        // });
+        await uploadPromise;
       } else {
         console.log("ScanScreen: Photo capture canceled or no assets found, or URI missing.");
         Alert.alert("Error", "Failed to capture image. Please try again.");
@@ -262,81 +270,69 @@ export default function ScanScreen() {
 
   console.log("ScanScreen: Rendering main content. ImageURI:", imageUri);
   return (
-    <SafeAreaView style={styles.safeAreaContainer}> 
-      <View style={styles.headerContainer}>
-        <IconButton
-          icon="logout"
-          size={24}
-          onPress={handleLogout}
-          style={styles.logoutButton}
-          // iconColor={theme.colors.primary} // Consider using theme color
-        />
-      </View>
-
-      {!imageUri ? (
-        <View style={styles.cameraContainer}>
-          <CameraView style={styles.cameraPreview} ref={cameraRef} facing='back' />
-          <Button
-            mode="contained"
-            onPress={takePhoto}
-            icon="camera"
-            style={styles.captureButton}
-            disabled={processingPhoto}
-          >
-            Take Photo
-          </Button>
+    <SafeAreaView style={styles.safeAreaContainer}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.headerContainer}>
+          <IconButton
+            icon="logout"
+            size={24}
+            onPress={handleLogout}
+            style={styles.logoutButton}
+            // iconColor={theme.colors.primary} // Consider using theme color
+          />
         </View>
-      ) : (
-        <View style={styles.contentContainer}>
-          {imageUri && (
-            <Image source={{ uri: imageUri }} style={styles.previewImage} />
-          )}
-          <Button
-            mode="outlined"
-            onPress={() => { setImageUri(null); setResult(null); }} // Clear photo & result to free memory
-            style={styles.retakeButton}
-            disabled={processingPhoto}
-          >
-            Retake Photo
-          </Button>
 
-          {processingPhoto && (
-            <ActivityIndicator
-              animating
-              size="large"
-              color={theme.colors.primary}
-              style={{ marginVertical: 10 }}
-            />
-          )}
-
-          {result && (
-            <Card style={styles.resultCard}>
-              <Card.Title
-                title={`Decision: ${result.decision}`}
-                subtitle={`Park Till: ${result.parkTill}`}
-                left={(props: { size: number; }) => (
-                  <IconButton
-                    icon={
-                      result.decision === "Yes"
-                        ? "parking"
-                        : "close-circle"
-                    }
-                    size={props.size} // Use size from props
-                    iconColor={ // Use iconColor prop for react-native-paper IconButton
-                      result.decision === "Yes"
-                        ? theme.colors.tertiary // Using theme color
-                        : theme.colors.error // Using theme color
-                    }
-                  />
-                )}
+        {!imageUri ? (
+          <View style={styles.cameraContainer}>
+            <CameraView style={styles.cameraPreview} ref={cameraRef} facing='back' />
+            <Button
+              mode="contained"
+              onPress={takePhoto}
+              icon="camera"
+              style={styles.captureButton}
+              disabled={processingPhoto}
+            >
+              Take Photo
+            </Button>
+          </View>
+        ) : (
+          <View style={styles.contentContainer}>
+            {processingPhoto && (
+              <ActivityIndicator
+                animating
+                size="large"
+                color={theme.colors.primary}
+                style={{ marginVertical: 10 }}
               />
-              <Card.Content>
-                <Text>{result.explanation}</Text>
-              </Card.Content>
-            </Card>
-          )}
-        </View>
-      )}
+            )}
+
+            {result && (
+              <View style={styles.resultContainer}>
+                <Image
+                  source={
+                    result.decision === 'Yes'
+                      ? require('../../assets/parking.png')
+                      : require('../../assets/no_parking.png')
+                  }
+                  style={styles.parkingImage}
+                  resizeMode="contain"
+                />
+                <Text style={styles.resultText}>{`Decision: ${result.decision}`}</Text>
+                <Text style={styles.resultText}>{`Park Till: ${result.parkTill ?? 'N/A'}`}</Text>
+                <Text style={styles.resultExplanation}>{result.explanation}</Text>
+            <Button
+              mode="outlined"
+              onPress={() => { setImageUri(null); setResult(null); }} // Clear photo & result to free memory
+              style={styles.retakeButton}
+              disabled={processingPhoto}
+            >
+              Retake Photo
+            </Button>
+              </View>
+            )}
+          </View>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -399,5 +395,26 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     // resizeMode: 'contain', // Or 'cover'
   },
-  resultCard: { width: "100%", marginTop: 16 },
+  resultContainer: {
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  parkingImage: {
+    width: 64,
+    height: 64,
+    marginBottom: 16,
+  },
+  resultText: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginVertical: 4,
+  },
+  resultExplanation: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+  },
 });
